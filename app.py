@@ -7,12 +7,9 @@ from langchain_core.prompts import ChatPromptTemplate
 from dotenv import load_dotenv
 from pathlib import Path
 
-# Load .env from the project directory explicitly
+# Load .env from the project directory
 env_path = Path(__file__).parent / ".env"
 load_dotenv(dotenv_path=env_path)
-
-# temporary debugging print
-# print(f"OPENAI_API_KEY from .env: {os.getenv('OPENAI_API_KEY')}")
 
 # Set your OpenAI API key
 if "OPENAI_API_KEY" not in os.environ:
@@ -21,6 +18,18 @@ if "OPENAI_API_KEY" not in os.environ:
 # Initialize the OpenAI chat model
 llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
 
+# Default system + human templates
+DEFAULT_BLOG_SYSTEM = (
+    "You are a skilled writer who creates engaging and informative blog posts."
+)
+DEFAULT_BLOG_HUMAN = "Write a detailed blog post about {topic}."
+
+DEFAULT_SOCIAL_SYSTEM = (
+    "You are a creative writer who crafts catchy and concise social media posts."
+)
+DEFAULT_SOCIAL_HUMAN = "Write a compelling social media post about {topic}."
+
+"""
 # Define prompt templates for blog and social media posts
 blog_prompt_template = ChatPromptTemplate.from_messages(
     [
@@ -41,16 +50,25 @@ social_media_prompt_template = ChatPromptTemplate.from_messages(
         ("human", "Write a compelling social media post about {topic}."),
     ]
 )
+"""
 
 
-def generate_content(topic, content_type):
+def generate_content(topic, content_type, system_prompt=None, human_prompt=None):
     if content_type == "blog":
-        chain = blog_prompt_template | llm
+        system_prompt = system_prompt or DEFAULT_BLOG_SYSTEM
+        human_prompt = human_prompt or DEFAULT_BLOG_HUMAN
     elif content_type == "social media":
-        chain = social_media_prompt_template | llm
+        system_prompt = system_prompt or DEFAULT_SOCIAL_SYSTEM
+        human_prompt = human_prompt or DEFAULT_SOCIAL_HUMAN
     else:
         raise ValueError("Invalid content type. Choose 'blog' or 'social media'.")
 
+    # Create the prompt dynamically
+    custom_template = ChatPromptTemplate.from_messages(
+        [("system", system_prompt), ("human", human_prompt)]
+    )
+
+    chain = custom_template | llm
     response = chain.invoke({"topic": topic})
     return response.content
 

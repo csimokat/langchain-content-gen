@@ -1,6 +1,12 @@
 # ui.py
+import re
 import gradio as gr
 from app import generate_content
+
+
+def sanitize_filename(text):
+    # Basic sanitization to make a filesystem-friendly filename
+    return re.sub(r"\W+", "_", text.strip().lower())[:50]
 
 
 def generate(topic, content_type):
@@ -28,6 +34,7 @@ with gr.Blocks() as demo:
 
     with gr.Row():
         generate_btn = gr.Button("Generate Content")
+        clear_btn = gr.Button("Clear All")
 
     with gr.Row():
         md_output = gr.Markdown(label="Markdown Preview")
@@ -36,20 +43,31 @@ with gr.Blocks() as demo:
         download_output = gr.File(label="Download Generated Content (.txt)")
 
     # Handle click event
+    # Generation logic with filename auto-generator
     def process_and_create_file(topic, content_type):
         content, _ = generate(topic, content_type)
-        # Save to file dynamically
         if "Error" in content:
             return content, None
-        filename = "generated_content.txt"
+
+        sanitized_topic = sanitize_filename(topic)
+        filename = f"{sanitized_topic}_{content_type.replace(' ', '_')}.txt"
+
         with open(filename, "w") as f:
             f.write(content)
         return content, filename
+
+    # Clear/reset logic
+    def reset_fields():
+        return "", None, None
 
     generate_btn.click(
         fn=process_and_create_file,
         inputs=[topic_input, content_type],
         outputs=[md_output, download_output],
+    )
+
+    clear_btn.click(
+        fn=reset_fields, inputs=[], outputs=[topic_input, md_output, download_output]
     )
 
 if __name__ == "__main__":

@@ -29,29 +29,6 @@ DEFAULT_SOCIAL_SYSTEM = (
 )
 DEFAULT_SOCIAL_HUMAN = "Write a compelling social media post about {topic}."
 
-"""
-# Define prompt templates for blog and social media posts
-blog_prompt_template = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            "You are a skilled writer who creates engaging and informative blog posts.",
-        ),
-        ("human", "Write a detailed blog post about {topic}."),
-    ]
-)
-
-social_media_prompt_template = ChatPromptTemplate.from_messages(
-    [
-        (
-            "system",
-            "You are a creative writer who crafts catchy and concise social media posts.",
-        ),
-        ("human", "Write a compelling social media post about {topic}."),
-    ]
-)
-"""
-
 
 def generate_content(topic, content_type, system_prompt=None, human_prompt=None):
     if content_type == "blog":

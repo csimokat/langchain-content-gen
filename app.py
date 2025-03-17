@@ -5,8 +5,14 @@ from langchain_core.prompts import ChatPromptTemplate
 
 # Load OpenAI API key from env file
 from dotenv import load_dotenv
+from pathlib import Path
 
-load_dotenv()
+# Load .env from the project directory explicitly
+env_path = Path(__file__).parent / ".env"
+load_dotenv(dotenv_path=env_path)
+
+# temporary debugging print
+# print(f"OPENAI_API_KEY from .env: {os.getenv('OPENAI_API_KEY')}")
 
 # Set your OpenAI API key
 if "OPENAI_API_KEY" not in os.environ:

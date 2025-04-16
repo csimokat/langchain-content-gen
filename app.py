@@ -22,12 +22,24 @@ llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
 DEFAULT_BLOG_SYSTEM = (
     "You are a skilled writer who creates engaging and informative blog posts."
 )
-DEFAULT_BLOG_HUMAN = "Write a detailed blog post about {topic}."
+DEFAULT_BLOG_HUMAN = (
+    "Write a detailed blog post about {topic}.\n\n"
+    "Then, provide the following:\n"
+    "1. A comma-separated list of SEO tags\n"
+    "2. A short focus keyphrase (1 line)\n"
+    "3. A meta description (1–2 sentences)"
+)
 
 DEFAULT_SOCIAL_SYSTEM = (
     "You are a creative writer who crafts catchy and concise social media posts."
 )
-DEFAULT_SOCIAL_HUMAN = "Write a compelling social media post about {topic}."
+DEFAULT_SOCIAL_HUMAN = (
+    "Write a compelling social media post about {topic}.\n\n"
+    "Then, provide the following:\n"
+    "1. A comma-separated list of SEO tags\n"
+    "2. A short focus keyphrase (1 line)\n"
+    "3. A meta description (1–2 sentences)"
+)
 
 
 def generate_content(topic, content_type, system_prompt=None, human_prompt=None):

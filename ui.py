@@ -61,6 +61,10 @@ with gr.Blocks() as demo:
 
     with gr.Row():
         md_output = gr.Markdown(label="Markdown Preview")
+        download_output = gr.File(label="Download Generated Content (.txt)")
+        tags_output = gr.Textbox(label="Tags", interactive=False)
+        keyphrase_output = gr.Textbox(label="Focus Keyphrase", interactive=False)
+        meta_output = gr.Textbox(label="Meta Description", interactive=False)
 
     with gr.Row():
         download_output = gr.File(label="Download Generated Content (.txt)")
@@ -103,17 +107,18 @@ def process_and_create_file(topic, content_type, system_prompt, human_prompt):
     if "Error" in content:
         return content, None
 
+    main_content, tags, keyphrase, meta_description = parse_output(content)
     sanitized_topic = sanitize_filename(topic)
     filename = f"{sanitized_topic}_{content_type.replace(' ', '_')}.txt"
 
     with open(filename, "w") as f:
         f.write(content)
-    return content, filename
+    return content, filename, tags, keyphrase, meta_description
 
 
 # Clear/reset logic
 def reset_fields():
-    return "", None, None, "", "", "0 / 100", "0 / 400", "0 / 400"
+    return "", None, None, "", "", "0 / 100", "0 / 400", "0 / 400", "", "", ""
 
 
 def count_chars(text, max_len):
@@ -122,7 +127,13 @@ def count_chars(text, max_len):
     generate_btn.click(
         fn=process_and_create_file,
         inputs=[topic_input, content_type, system_prompt_input, human_prompt_input],
-        outputs=[md_output, download_output],
+        outputs=[
+            md_output,
+            download_output,
+            tags_output,
+            keyphrase_output,
+            meta_output,
+        ],
     )
 
     clear_btn.click(
@@ -136,6 +147,31 @@ def count_chars(text, max_len):
             human_prompt_input,
         ],
     )
+
+
+def parse_output(full_text):
+    # Simple parsing based on line breaks
+    parts = full_text.strip().split("\n")
+
+    # Heuristically separate sections (works for GPT output with 1., 2., 3.)
+    tags = ""
+    keyphrase = ""
+    meta_description = ""
+    content_lines = []
+
+    for line in parts:
+        if line.strip().startswith("1."):
+            tags = line.split("1.", 1)[-1].strip()
+        elif line.strip().startswith("2."):
+            keyphrase = line.split("2.", 1)[-1].strip()
+        elif line.strip().startswith("3."):
+            meta_description = line.split("3.", 1)[-1].strip()
+        else:
+            if not any(x in line for x in ["1.", "2.", "3."]):
+                content_lines.append(line)
+
+    main_content = "\n".join(content_lines).strip()
+    return main_content, tags, keyphrase, meta_description
 
 
 if __name__ == "__main__":
